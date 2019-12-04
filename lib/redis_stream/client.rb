@@ -1,20 +1,50 @@
+require 'redis'
+
 module RedisStream
   class Client
+    PREFIX = 'stream-'.freeze
+
     def initialize
-      @streams = {}
+      @redis = Redis.new
     end
 
-    def add(message, key:)
-      @streams[key] ||= []
-      @streams[key] << message
+    def add(entry, key:)
+      @redis.xadd(add_prefix(key), value: entry)
     end
 
     def len(key:)
-      @streams[key]&.size || 0
+      @redis.xlen(add_prefix(key))
+    end
+
+    def clear(key:)
+      @redis.xtrim(add_prefix(key), 0)
     end
 
     def each_message(key:)
-      @streams[key].each { |message| yield(message) }
+      last_id = '0'
+
+      while
+        result = @redis.xread(add_prefix(key), last_id, count: 1)
+        break if result.empty?
+
+        messages = result[add_prefix(key)]
+        messages.each do |message|
+          last_id, entry = message
+          yield(entry['value'])
+        end
+      end
+    end
+
+    def all(key:)
+      result = @redis.xread(add_prefix(key), '0')
+      messages = result[add_prefix(key)]
+      messages.map { |message| message.last['value'] }
+    end
+
+    private
+
+    def add_prefix(key)
+      PREFIX + key
     end
   end
 end

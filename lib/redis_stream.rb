@@ -1,5 +1,3 @@
-require 'pry'
-
 require 'redis_stream/version'
 require 'redis_stream/client'
 
