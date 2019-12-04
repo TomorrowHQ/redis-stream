@@ -1,6 +1,12 @@
-require "redis_stream/version"
+require 'pry'
+
+require 'redis_stream/version'
+require 'redis_stream/client'
 
 module RedisStream
   class Error < StandardError; end
-  # Your code goes here...
+
+  def self.new
+    Client.new
+  end
 end
