@@ -35,12 +35,6 @@ module RedisStream
       end
     end
 
-    def all(key:)
-      result = @redis.xread(add_prefix(key), '0')
-      messages = result[add_prefix(key)]
-      messages.map { |message| message.last['value'] }
-    end
-
     private
 
     def add_prefix(key)

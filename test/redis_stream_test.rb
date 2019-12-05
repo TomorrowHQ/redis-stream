@@ -33,13 +33,4 @@ describe RedisStream do
 
     assert_equal ['Message 1', 'Message 2'], received_messages
   end
-
-  it 'gets all entries from straem' do
-    @stream.add('Entry 1', key: 'test-1')
-    @stream.add('Entry 2', key: 'test-1')
-    @stream.add('Entry 3', key: 'test-1')
-
-    messages = @stream.all(key: 'test-1')
-    assert_equal ['Entry 1', 'Entry 2', 'Entry 3'], messages
-  end
 end
