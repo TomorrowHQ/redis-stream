@@ -3,6 +3,7 @@ require 'test_helper'
 describe RedisStream do
   before(:each) do
     @stream = RedisStream.new
+    @stream.group(key: 'test-1', name: 'testers').destroy
     @stream.clear(key: 'test-1')
     @stream.clear(key: 'test-2')
   end
@@ -32,5 +33,16 @@ describe RedisStream do
     end
 
     assert_equal ['Message 1', 'Message 2'], received_messages
+  end
+
+  it 'creates consumer group' do
+    group = @stream.group(key: 'test-1', name: 'testers')
+    assert_kind_of RedisStream::Group, group
+
+    same_group = @stream.group(key: 'test-1', name: 'testers')
+    assert_kind_of RedisStream::Group, same_group
+
+    assert_equal group.key, same_group.key
+    assert_equal group.name, same_group.name
   end
 end
