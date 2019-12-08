@@ -1,4 +1,6 @@
+require 'redis'
 require 'redis_stream/version'
+require 'redis_stream/group'
 require 'redis_stream/client'
 
 module RedisStream
