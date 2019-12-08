@@ -79,13 +79,12 @@ describe RedisStream::Group do
   end
 
   describe 'each_message' do
-    before { @stream = RedisStream.new }
-
     it 'reads messages from stream' do
+      stream = RedisStream::Stream.new(key: 'group-test', redis: @redis)
       @group.create
 
-      @stream.add('Message 1', key: 'group-test')
-      @stream.add('Message 2', key: 'group-test')
+      stream.add('Message 1')
+      stream.add('Message 2')
 
       received_messages = []
       @group.each_message do |message|

@@ -30,11 +30,14 @@ require 'redis_stream'
 
 client = RedisStream.new
 
-# First argument is body of the message that will placed into the stream. Second
-# argument refers to Redis stream key.
-client.add(20.0, key: 'weather')
-client.add(21.0, key: 'weather')
-client.add(22.0, key: 'weather')
+weather_stream = client.stream('weather')
+
+weather_stream.add(20.0)
+weather_stream.add(21.0)
+weather_stream.add(22.0)
+
+puts weather_stream.len
+#=> 3
 ```
 
 ### Consuming messages from the stream
@@ -43,11 +46,12 @@ client.add(22.0, key: 'weather')
 require 'redis_stream'
 
 client = RedisStream.new
+messages_stream = client.stream('messages')
 
-client.add('Message 1', key: 'messages')
-client.add('Message 2', key: 'messages')
+messages_stream.add('Message 1')
+messages_stream.add('Message 2')
 
-client.each_message(key: 'messages') do |message|
+messages_stream.each_message do |message|
   puts message
 end
 # => Message 1
