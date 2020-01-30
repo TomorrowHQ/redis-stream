@@ -51,4 +51,34 @@ describe RedisStream::Stream do
       assert_equal 0, @redis.xlen(stream.key)
     end
   end
+
+  describe '#last' do
+    it 'retuns last message added to the stream' do
+      stream = RedisStream::Stream.new(key: 'test-1', redis: @redis)
+
+      @redis.xadd('test-1', value: '1')
+      @redis.xadd('test-1', value: '2')
+
+      assert_equal '2', stream.last
+
+      stream.clear
+
+      assert_nil stream.last
+    end
+  end
+
+  describe '#first' do
+    it 'retuns first message added to the stream' do
+      stream = RedisStream::Stream.new(key: 'test-1', redis: @redis)
+
+      @redis.xadd('test-1', value: '1')
+      @redis.xadd('test-1', value: '2')
+
+      assert_equal '1', stream.first
+
+      stream.clear
+
+      assert_nil stream.first
+    end
+  end
 end

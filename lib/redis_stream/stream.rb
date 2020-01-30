@@ -33,5 +33,21 @@ module RedisStream
         end
       end
     end
+
+    # XREVRANGE [name] + - COUNT 1
+    def last
+      _id, entry = @redis.xrevrange(key, '+', '-', count: 1).first
+      return if entry.nil?
+
+      entry['value']
+    end
+
+    # XRANGE [name] - + COUNT 1
+    def first
+      _id, entry = @redis.xrange(key, '-', '+', count: 1).first
+      return if entry.nil?
+
+      entry['value']
+    end
   end
 end
