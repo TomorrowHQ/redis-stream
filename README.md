@@ -42,9 +42,9 @@ client = RedisStream.new
 
 weather_stream = client.stream('weather')
 
-weather_stream.add(20.0)
-weather_stream.add(21.0)
-weather_stream.add(22.0)
+weather_stream.add({ temp: 20.0 })
+weather_stream.add({ temp: 21.0 })
+weather_stream.add({ temp: 22.0 })
 
 puts weather_stream.len
 #=> 3
@@ -58,12 +58,18 @@ require 'redis_stream'
 client = RedisStream.new
 messages_stream = client.stream('messages')
 
-messages_stream.add('Message 1')
-messages_stream.add('Message 2')
+messages_stream.add({ msg: 'Message 1' })
+messages_stream.add({ msg: 'Message 2' })
 
 messages_stream.each_message do |message|
   puts message
 end
-# => Message 1
-# => Message 2
+# => { "msg" => Message 1 }
+# => { "msg" => Message 2 }
+
+puts messages_stream.last
+# => { "msg" => Message 2 }
+
+puts messages_stream.first
+# => { "msg" => Message 2 }
 ```
