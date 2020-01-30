@@ -25,6 +25,18 @@ describe RedisStream::Stream do
     end
   end
 
+  describe '#group' do
+    it 'returns RedisStream::Group' do
+      stream = RedisStream::Stream.new(key: 'test-1', redis: @redis)
+
+      group = stream.group(name: 'testname')
+
+      assert_equal RedisStream::Group, group.class
+      assert_equal 'test-1', group.key
+      assert_equal 'testname', group.name
+    end
+  end
+
   describe '#len' do
     it 'returns number of entries in the stream' do
       stream = RedisStream::Stream.new(key: 'test-1', redis: @redis)

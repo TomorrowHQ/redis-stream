@@ -19,6 +19,10 @@ module RedisStream
       @redis.xtrim(key, 0)
     end
 
+    def group(name:)
+      RedisStream::Group.new(redis: @redis, key: key, name: name)
+    end
+
     def each_message
       last_id = '0'
 
