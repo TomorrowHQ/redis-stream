@@ -1,7 +1,7 @@
 module RedisStream
   class Client
-    def initialize
-      @redis = Redis.new
+    def initialize(redis)
+      @redis = redis
     end
 
     def stream(key)

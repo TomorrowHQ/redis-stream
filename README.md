@@ -23,6 +23,16 @@ require 'redis_stream'
 client = RedisStream.new
 ```
 
+When you need to have control over redis connection you can pass redis instance
+in initializer.
+
+```ruby
+require 'redis_stream'
+
+redis = Redis.new # set it up as you need
+client = RedisStream.new(redis)
+```
+
 ### Adding messages to the stream
 
 ```ruby
