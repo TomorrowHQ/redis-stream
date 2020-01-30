@@ -39,7 +39,7 @@ module RedisStream
         messages = result[key]
         messages.each do |message|
           id, entry = message
-          yield(entry['value'])
+          yield(entry)
           @redis.xack(key, name, id) if ack
         end
       end

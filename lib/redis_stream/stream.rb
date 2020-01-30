@@ -8,7 +8,7 @@ module RedisStream
     end
 
     def add(entry)
-      @redis.xadd(key, value: entry)
+      @redis.xadd(key, entry)
     end
 
     def len
@@ -29,7 +29,7 @@ module RedisStream
         messages = result[key]
         messages.each do |message|
           last_id, entry = message
-          yield(entry['value'])
+          yield(entry)
         end
       end
     end
@@ -37,17 +37,13 @@ module RedisStream
     # XREVRANGE [name] + - COUNT 1
     def last
       _id, entry = @redis.xrevrange(key, '+', '-', count: 1).first
-      return if entry.nil?
-
-      entry['value']
+      entry
     end
 
     # XRANGE [name] - + COUNT 1
     def first
       _id, entry = @redis.xrange(key, '-', '+', count: 1).first
-      return if entry.nil?
-
-      entry['value']
+      entry
     end
   end
 end

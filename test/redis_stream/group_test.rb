@@ -83,15 +83,18 @@ describe RedisStream::Group do
       stream = RedisStream::Stream.new(key: 'group-test', redis: @redis)
       @group.create
 
-      stream.add('Message 1')
-      stream.add('Message 2')
+      stream.add({ msg: 'Message 1' })
+      stream.add({ msg: 'Message 2' })
 
       received_messages = []
       @group.each_message do |message|
         received_messages << message
       end
 
-      assert_equal ['Message 1', 'Message 2'], received_messages
+      assert_equal(
+        [{ 'msg' => 'Message 1' }, { 'msg' => 'Message 2' }],
+        received_messages
+      )
     end
   end
 end

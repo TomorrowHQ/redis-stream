@@ -12,13 +12,13 @@ describe RedisStream::Stream do
       stream_1 = RedisStream::Stream.new(key: 'test-1', redis: @redis)
       stream_2 = RedisStream::Stream.new(key: 'test-2', redis: @redis)
 
-      stream_1.add('Message')
+      stream_1.add({ message: 'Message' })
 
       assert_equal 1, @redis.xlen(stream_1.key)
       assert_equal 0, @redis.xlen(stream_2.key)
 
-      stream_2.add('Message')
-      stream_2.add('Message')
+      stream_2.add({ message: 'Message' })
+      stream_2.add({ message: 'Message' })
 
       assert_equal 2, @redis.xlen(stream_2.key)
       assert_equal 1, @redis.xlen(stream_1.key)
@@ -31,7 +31,7 @@ describe RedisStream::Stream do
 
       assert_equal 0, stream.len
 
-      @redis.xadd('test-1', value: 'Hello')
+      @redis.xadd('test-1', { value: 'Hello' })
 
       assert_equal 1, stream.len
     end
@@ -41,8 +41,8 @@ describe RedisStream::Stream do
     it 'returns number of entries in the stream' do
       stream = RedisStream::Stream.new(key: 'test-1', redis: @redis)
 
-      @redis.xadd('test-1', value: 'Hello 1')
-      @redis.xadd('test-1', value: 'Hello 2')
+      @redis.xadd('test-1', { value: 'Hello 1' })
+      @redis.xadd('test-1', { value: 'Hello 2' })
 
       assert_equal 2, @redis.xlen(stream.key)
 
@@ -56,10 +56,10 @@ describe RedisStream::Stream do
     it 'retuns last message added to the stream' do
       stream = RedisStream::Stream.new(key: 'test-1', redis: @redis)
 
-      @redis.xadd('test-1', value: '1')
-      @redis.xadd('test-1', value: '2')
+      @redis.xadd('test-1', { 'value' => '1' })
+      @redis.xadd('test-1', { 'value' => '2' })
 
-      assert_equal '2', stream.last
+      assert_equal({ 'value' => '2' }, stream.last)
 
       stream.clear
 
@@ -71,10 +71,10 @@ describe RedisStream::Stream do
     it 'retuns first message added to the stream' do
       stream = RedisStream::Stream.new(key: 'test-1', redis: @redis)
 
-      @redis.xadd('test-1', value: '1')
-      @redis.xadd('test-1', value: '2')
+      @redis.xadd('test-1', { 'value' => '1' })
+      @redis.xadd('test-1', { 'value' => '2' })
 
-      assert_equal '1', stream.first
+      assert_equal({ 'value' => '1' }, stream.first)
 
       stream.clear
 
