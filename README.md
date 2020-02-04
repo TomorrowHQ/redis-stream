@@ -30,7 +30,7 @@ in initializer.
 require 'redis_stream'
 
 redis = Redis.new # set it up as you need
-client = RedisStream.new(redis)
+client = RedisStream.new(redis: redis)
 ```
 
 ### Adding messages to the stream
@@ -72,4 +72,62 @@ puts messages_stream.last
 
 puts messages_stream.first
 # => { "msg" => Message 2 }
+```
+
+### Creating consumer group
+
+One of most powerful features of redis stream is consumer groups which works in
+similar way as Kafka consumer groups.
+
+Here is an example of how you can create one.
+```ruby
+require 'redis_stream'
+
+client = RedisStream.new
+group = client.group(key: 'messages', name: 'message-readers')
+
+puts group.info
+# => {"name"=>"message-readers", "consumers"=>0, "pending"=>0,
+#     "last-delivered-id"=>"0-0"}
+```
+
+### Consuming messages as group
+
+API for consuming messages as group looks the same as consuming directly from
+the stream. One main difference is that Redis memorizes position of group and
+continues reading only new messages.
+
+Here is an example:
+```ruby
+require 'redis_stream'
+
+client = RedisStream.new
+
+stream = client.stream('messages')
+group = client.group(key: 'messages', name: 'message-readers')
+
+stream.add({ content: 'Hello' })
+group.each_message do |message|
+  puts message
+end
+# => {"content"=>"Hello"}
+
+stream.add({ content: 'How are you?' })
+group.each_message do |message|
+  puts message
+end
+# => {"content"=>"How are you?"}
+```
+
+### Delete consumer group
+
+You can delete a group from Redis and it will erase it's position on a stream.
+
+```ruby
+require 'redis_stream'
+
+client = RedisStream.new
+group = client.group(key: 'messages', name: 'message-readers')
+
+group.destroy
 ```
