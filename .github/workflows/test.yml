@@ -1,0 +1,28 @@
+name: Ruby
+
+on: [push]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Redis
+        uses: zhulik/redis-action@1.1.0
+        with:
+          redis version: '5'
+          number of databases: 100
+      
+      - uses: actions/checkout@v2
+      
+      - name: Set up Ruby 2.6
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.6.x
+
+      - name: Install dependencies
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Run tests
+        run: bundle exec rake
