@@ -1,4 +1,4 @@
-module RedisStream
+class RedisStream
   class Client
     def initialize(redis)
       @redis = redis

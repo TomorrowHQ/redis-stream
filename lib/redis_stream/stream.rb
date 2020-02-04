@@ -1,4 +1,4 @@
-module RedisStream
+class RedisStream
   class Stream
     attr_reader :key
 

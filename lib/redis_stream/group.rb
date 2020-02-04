@@ -1,4 +1,4 @@
-module RedisStream
+class RedisStream
   class Group
     attr_reader :key, :name
 
