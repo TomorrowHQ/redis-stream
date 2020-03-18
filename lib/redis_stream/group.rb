@@ -33,7 +33,7 @@ module RedisStream
 
     def each_message(consumer: 'c1', ack: true)
       while
-        result = @redis.xreadgroup(name, consumer, key, '>')
+        result = @redis.xreadgroup(name, consumer, key, '>', count: 1)
         break if result.empty?
 
         messages = result[key]
