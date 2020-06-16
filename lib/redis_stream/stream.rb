@@ -1,53 +1,62 @@
 module RedisStream
   class Stream
-    attr_reader :key
+    include Enumerable
 
-    def initialize(key:, redis:)
-      @key = key
-      @redis = redis
+    attr_reader :name
+
+    def initialize(name:)
+      @name = name
+      @values = []
     end
 
-    def add(entry)
-      @redis.xadd(key, entry)
+    def <<(value)
+      Redis.current.xadd(name, dump(value))
+      self
     end
-
-    def len
-      @redis.xlen(key)
-    end
+    alias_method :push, :<<
 
     def clear
-      @redis.xtrim(key, 0)
+      Redis.current.xtrim(name, 0)
     end
 
-    def group(name:)
-      RedisStream::Group.new(redis: @redis, key: key, name: name)
+    def last(count = 1)
+      messages = Redis.current.xrevrange(name, '+', '-', count: count)
+      messages.reverse!
+
+      result = messages.map do |message|
+        _id, content = message
+        load(content)
+      end
+
+      count == 1 ? result.first : result
     end
 
-    def each_message
-      last_id = '0'
+    def length
+      Redis.current.xlen(name)
+    end
+    alias_method :size, :length
+
+    def each(&block)
+      current_message_id = "0"
 
       while
-        result = @redis.xread(key, last_id, count: 1)
+        result = Redis.current.xread(name, current_message_id, count: 1)
         break if result.empty?
 
-        messages = result[key]
-        messages.each do |message|
-          last_id, entry = message
-          yield(entry)
-        end
+        message = result[name].first
+        current_message_id, message_content = message
+        block.call(load(message_content))
       end
     end
 
-    # XREVRANGE [name] + - COUNT 1
-    def last
-      _id, entry = @redis.xrevrange(key, '+', '-', count: 1).first
-      entry
+    private
+
+    def dump(value)
+      { value: Marshal.dump(value) }
     end
 
-    # XRANGE [name] - + COUNT 1
-    def first
-      _id, entry = @redis.xrange(key, '-', '+', count: 1).first
-      entry
+    def load(message_content)
+      Marshal.load(message_content["value"])
     end
   end
 end

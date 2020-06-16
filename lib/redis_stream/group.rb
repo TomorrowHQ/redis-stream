@@ -1,54 +1,36 @@
 module RedisStream
   class Group
-    attr_reader :key, :name
+    attr_reader :name, :stream
 
-    def initialize(redis:, key:, name:)
-      @redis = redis
-      @key = key
+    # @param name <String>
+    # @param stream <RedisStream::Stream>
+    # @return RedisStream::Group
+    def initialize(name:, stream:)
       @name = name
-      @last_delivered_id = '0'
+      @stream = stream
+
+      create_group
     end
 
-    # Creates group and stream if group does not exist.
-    # @return [Group]
-    def create
-      if info.nil?
-        @redis.xgroup(:create, key, name, @last_delivered_id, mkstream: true)
-      end
+    # @param name <String> Consumer name
+    # @return <RedisStream::Consumer>
+    def consumer(name)
+      RedisStream::Consumer.new(name: name, group: self, stream: stream)
+    end
 
+    # Resets group's next id on the stream
+    def reset(id = "0")
+      Redis.current.xgroup(:setid, stream.name, name, id)
       self
-    end
-
-    # @return [Group]
-    def destroy
-      @redis.xgroup(:destroy, key, name)
-      self
-    end
-
-    def info
-      find_me(@redis.xinfo(:groups, key))
-    rescue Redis::CommandError
-      nil
-    end
-
-    def each_message(consumer: 'c1', ack: true)
-      while
-        result = @redis.xreadgroup(name, consumer, key, '>', count: 1)
-        break if result.empty?
-
-        messages = result[key]
-        messages.each do |message|
-          id, entry = message
-          yield(entry)
-          @redis.xack(key, name, id) if ack
-        end
-      end
     end
 
     private
 
-    def find_me(groups)
-      groups.find { |group| group['name'] == name }
+    def create_group
+      Redis.current.xgroup(
+        :create, stream.name, name, "$", mkstream: true)
+    rescue Redis::CommandError
+      nil
     end
   end
 end
